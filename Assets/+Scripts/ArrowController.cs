@@ -2,36 +2,50 @@ using UnityEngine;
 
 public class ArrowController : MonoBehaviour
 {
-    public float speed = 10f; // Скорость движения стрелы.
+    public float speed = 10f; // Скорость полета стрелы.
+    private Vector3 initialLocalPosition; // Исходная локальная позиция стрелы.
+    private Quaternion initialLocalRotation; // Исходное локальное вращение стрелы.
+    private Transform target; // Цель стрелы.
+    public bool IsFlying { get; private set; } = false; // Флаг полета.
 
-    private Vector3 direction;
-
-    public void SetDirection(Vector3 dir)
+    private void Start()
     {
-        direction = dir.normalized;
+        // Сохраняем исходные параметры.
+        initialLocalPosition = transform.localPosition;
+        initialLocalRotation = transform.localRotation;
+    }
+
+    public void Shoot(Transform targetTransform)
+    {
+        if (!IsFlying)
+        {
+            IsFlying = true;
+            target = targetTransform;
+        }
     }
 
     private void Update()
     {
-        transform.Translate(direction * speed * Time.deltaTime);
-
-        // Удаляем стрелу, если она выходит за границы экрана.
-        if (Mathf.Abs(transform.position.x) > Camera.main.orthographicSize * 2f)
+        if (IsFlying && target != null)
         {
-            Destroy(gameObject);
+            // Двигаем стрелу к цели.
+            transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+
+            // Если достигли цели.
+            if (Vector3.Distance(transform.position, target.position) < 0.1f)
+            {
+                BallController ball = target.GetComponent<BallController>();
+                if (ball != null) ball.Hit();
+
+                ResetArrow(); // Возвращаем стрелу.
+            }
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void ResetArrow()
     {
-        if (other.CompareTag("Ball"))
-        {
-            BallController ball = other.GetComponent<BallController>();
-            if (ball != null)
-            {
-                ball.Hit(); // Уменьшаем здоровье шарика.
-                Destroy(gameObject); // Удаляем стрелу.
-            }
-        }
+        IsFlying = false;
+        transform.localPosition = initialLocalPosition; // Возвращаем позицию.
+        transform.localRotation = initialLocalRotation; // Возвращаем вращение.
     }
 }
