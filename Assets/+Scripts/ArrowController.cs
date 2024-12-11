@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class ArrowController : MonoBehaviour
 {
-    public float speed = 10f; // Скорость полета стрелы.
+    public float speed = 10f; // Скорость полёта стрелы.
     private Vector3 initialLocalPosition; // Исходная локальная позиция стрелы.
     private Quaternion initialLocalRotation; // Исходное локальное вращение стрелы.
     private Transform target; // Цель стрелы.
-    public bool IsFlying { get; private set; } = false; // Флаг полета.
+    public bool IsFlying { get; private set; } = false; // Флаг полёта.
 
     private void Start()
     {
@@ -26,8 +26,15 @@ public class ArrowController : MonoBehaviour
 
     private void Update()
     {
-        if (IsFlying && target != null)
+        if (IsFlying)
         {
+            if (target == null)
+            {
+                // Если цель уничтожена, возвращаем стрелу.
+                ResetArrow();
+                return;
+            }
+
             // Двигаем стрелу к цели.
             transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
@@ -45,6 +52,7 @@ public class ArrowController : MonoBehaviour
     private void ResetArrow()
     {
         IsFlying = false;
+        target = null; // Сбрасываем цель.
         transform.localPosition = initialLocalPosition; // Возвращаем позицию.
         transform.localRotation = initialLocalRotation; // Возвращаем вращение.
     }

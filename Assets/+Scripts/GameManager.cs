@@ -1,31 +1,76 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    private BallSpawner ballSpawner; // Ссылка на спавнер шариков.
+    private GameUIManager gameUIManager; // Ссылка на менеджер UI.
 
-    public int lives = 3;
-    public int coins = 0;
+    public int lives = 3; // Количество жизней.
+    private int currentLevel; // Текущий уровень.
+    private int totalBalls; // Общее количество шариков в уровне.
 
-    private void Awake()
+    private void Start()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        ballSpawner = GetComponent<BallSpawner>();
+        gameUIManager = GetComponent<GameUIManager>();
+        // Загружаем уровень из PlayerPrefs или устанавливаем первый уровень.
+        currentLevel = PlayerPrefs.GetInt("Level", 1);
+
+        // Определяем количество шариков.
+        totalBalls = 3 + currentLevel - 1;
+
+        // Запускаем спавн шариков.
+        StartCoroutine(ballSpawner.SpawnBalls(currentLevel));
     }
 
-    public void LoseLife()
+    public void OnBallDestroyed()
     {
-        lives--;
-        if (lives <= 0)
+        totalBalls--;
+        Debug.Log(totalBalls);
+        // Проверяем, если все шарики уничтожены и остались жизни.
+        if (totalBalls <= 0 && lives > 0)
         {
-            Debug.Log("Game Over");
-            // Реализовать экран окончания игры.
+            LevelComplete();
         }
     }
 
-    public void AddCoins(int amount)
+
+    public void OnBallEscaped()
     {
-        coins += amount;
-        Debug.Log($"Coins: {coins}");
+        Debug.Log($"lives: {lives}-1 = {lives-1}");
+        totalBalls--;
+        lives--;
+        // Если жизни закончились.
+        if (lives <= 0)
+        {
+            GameOver();
+        }
+        if (totalBalls <= 0 && lives > 0)
+        {
+            LevelComplete();
+        }
+    }
+
+    private void LevelComplete()
+    {
+        // Увеличиваем уровень.
+        currentLevel++;
+        PlayerPrefs.SetInt("Level", currentLevel); // Сохраняем уровень.
+
+        // Открываем окно победы.
+        gameUIManager.ShowVictoryWindow();
+    }
+
+    private void GameOver()
+    {
+        // Открываем окно поражения.
+        gameUIManager.ShowDefeatWindow();
+    }
+
+    public void RestartScene()
+    {
+        // Перезагружаем текущую сцену.
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

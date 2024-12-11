@@ -5,6 +5,7 @@ public class BowController : MonoBehaviour
     private Transform arrow; // Ссылка на стрелу (первый дочерний объект).
     public float shootInterval = 2f; // Интервал между выстрелами.
     private float shootTimer; // Таймер для отслеживания времени между выстрелами.
+    private float detectionRadius = 2.5f; // Радиус "видимости" шариков.
 
     private void Start()
     {
@@ -18,16 +19,20 @@ public class BowController : MonoBehaviour
 
         if (targetBall != null)
         {
-            // Поворачиваем родительский объект лука к ближайшему шарику.
-            RotateParentToTarget(targetBall.transform);
+            BallController ballController = targetBall.GetComponent<BallController>();
 
-            // Отсчитываем время для автоматического выстрела.
-            shootTimer += Time.deltaTime;
-
-            if (shootTimer >= shootInterval && arrow.GetComponent<ArrowController>().IsFlying == false)
+            if (ballController != null && ballController.CanBeTargeted())
             {
-                arrow.GetComponent<ArrowController>().Shoot(targetBall.transform);
-                shootTimer = 0f; // Сбрасываем таймер.
+                // Поворачиваем лук к цели.
+                RotateParentToTarget(targetBall.transform);
+
+                // Автоматический выстрел.
+                shootTimer += Time.deltaTime;
+                if (shootTimer >= shootInterval && arrow.GetComponent<ArrowController>().IsFlying == false)
+                {
+                    arrow.GetComponent<ArrowController>().Shoot(targetBall.transform);
+                    shootTimer = 0f; // Сбрасываем таймер.
+                }
             }
         }
     }
@@ -38,7 +43,7 @@ public class BowController : MonoBehaviour
 
         // Рассчитываем угол для оси Z.
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.parent.rotation = Quaternion.Euler(0f, 0f, angle + 180f); // Учитываем, что изначально смотрим влево.
+        transform.parent.rotation = Quaternion.Euler(0f, 0f, angle + 180f); // Учитываем, что изначально лук смотрит влево.
     }
 
     private GameObject FindClosestVisibleBall()
@@ -49,10 +54,11 @@ public class BowController : MonoBehaviour
 
         foreach (GameObject ball in balls)
         {
-            Renderer ballRenderer = ball.GetComponent<Renderer>();
-            if (ballRenderer != null && ballRenderer.isVisible) // Проверяем видимость.
+            float distance = Vector3.Distance(transform.position, ball.transform.position);
+
+            Renderer renderer = ball.GetComponent<Renderer>();
+            if (renderer != null && renderer.isVisible && distance <= detectionRadius) // Проверяем видимость и расстояние.
             {
-                float distance = Vector3.Distance(transform.parent.position, ball.transform.position);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -63,4 +69,14 @@ public class BowController : MonoBehaviour
 
         return closestBall;
     }
+
+    //private void OnDrawGizmos()
+    //{
+    //    // Устанавливаем цвет для визуализации.
+    //    Gizmos.color = Color.green;
+
+    //    // Рисуем сферу вокруг лука с радиусом "видимости".
+    //    Gizmos.DrawWireSphere(transform.position, detectionRadius);
+    //}
+
 }

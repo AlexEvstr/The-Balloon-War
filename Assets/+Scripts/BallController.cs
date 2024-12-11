@@ -3,29 +3,32 @@ using UnityEngine;
 public class BallController : MonoBehaviour
 {
     public float speed = 2f; // Скорость движения шарика.
-    public int health = 1;  // Количество попаданий до уничтожения.
+    public System.Action OnDestroyed; // Событие уничтожения шарика.
+    public System.Action OnEscaped; // Событие выхода за верхнюю границу.
 
     private void Update()
     {
-        // Движение шарика вверх.
+        // Двигаем шарик вверх.
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
 
-        // Проверка на достижение верхней границы экрана.
-        if (transform.position.y > Camera.main.orthographicSize + 1f)
+        // Проверяем, если шарик выше 6.5 по Y.
+        if (transform.position.y > 6.5f)
         {
-            GameManager.Instance.LoseLife(); // Уменьшаем жизни.
-            Destroy(gameObject); // Удаляем шарик.
+            OnEscaped?.Invoke(); // Отнимаем жизнь.
+            Destroy(gameObject); // Уничтожаем шарик.
         }
+    }
+
+    public bool CanBeTargeted()
+    {
+        // Возвращаем true, если шарик выше -4.3 по Y.
+        return transform.position.y >= -4.3f;
     }
 
     public void Hit()
     {
-        health--;
-
-        if (health <= 0)
-        {
-            GameManager.Instance.AddCoins(10); // Добавляем монеты за уничтожение.
-            Destroy(gameObject);
-        }
+        // Логика уничтожения шарика.
+        OnDestroyed?.Invoke();
+        Destroy(gameObject);
     }
 }
