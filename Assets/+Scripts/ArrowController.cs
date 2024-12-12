@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class ArrowController : MonoBehaviour
 {
-    public float speed = 10f; // Скорость полёта стрелы.
-    private Vector3 initialLocalPosition; // Исходная локальная позиция стрелы.
-    private Quaternion initialLocalRotation; // Исходное локальное вращение стрелы.
+    public float speed = 10f; // Скорость полета стрелы.
+    private Vector3 initialLocalPosition; // Исходная позиция стрелы.
+    private Quaternion initialLocalRotation; // Исходное вращение стрелы.
     private Transform target; // Цель стрелы.
-    public bool IsFlying { get; private set; } = false; // Флаг полёта.
+    public bool IsFlying { get; private set; } = false; // Флаг, летит ли стрела.
 
     private void Start()
     {
@@ -21,20 +21,18 @@ public class ArrowController : MonoBehaviour
         {
             IsFlying = true;
             target = targetTransform;
+
+            // Поворачиваем стрелу к цели.
+            Vector3 direction = (target.position - transform.position).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
     }
 
     private void Update()
     {
-        if (IsFlying)
+        if (IsFlying && target != null)
         {
-            if (target == null)
-            {
-                // Если цель уничтожена, возвращаем стрелу.
-                ResetArrow();
-                return;
-            }
-
             // Двигаем стрелу к цели.
             transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
 
@@ -52,7 +50,6 @@ public class ArrowController : MonoBehaviour
     private void ResetArrow()
     {
         IsFlying = false;
-        target = null; // Сбрасываем цель.
         transform.localPosition = initialLocalPosition; // Возвращаем позицию.
         transform.localRotation = initialLocalRotation; // Возвращаем вращение.
     }

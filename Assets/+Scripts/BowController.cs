@@ -8,6 +8,7 @@ public class BowController : MonoBehaviour
     private float detectionRadius = 2.5f; // Радиус "видимости" шариков.
 
     private string playerPrefsKey;
+    private GameObject currentTarget; // Текущая цель.
 
     private void Start()
     {
@@ -22,28 +23,37 @@ public class BowController : MonoBehaviour
 
     private void Update()
     {
-        GameObject targetBall = FindClosestVisibleBall();
-
-        if (targetBall != null)
+        // Если текущая цель существует и доступна.
+        if (currentTarget != null && currentTarget.GetComponent<BallController>().CanBeTargeted())
         {
-            BallController ballController = targetBall.GetComponent<BallController>();
-
-            if (ballController != null && ballController.CanBeTargeted())
+            // Проверяем, остаётся ли цель в радиусе видимости.
+            float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
+            if (distance > detectionRadius)
             {
-                // Поворачиваем лук к цели.
-                RotateParentToTarget(targetBall.transform);
+                currentTarget = null; // Убираем цель, если она вне радиуса.
+                return;
+            }
 
-                // Автоматический выстрел.
-                shootTimer += Time.deltaTime;
-                
-                if (shootTimer >= shootInterval && arrow.GetComponent<ArrowController>().IsFlying == false)
-                {
-                    arrow.GetComponent<ArrowController>().Shoot(targetBall.transform);
-                    shootTimer = 0f; // Сбрасываем таймер.
-                }
+            if (!arrow.GetComponent<ArrowController>().IsFlying)
+            {
+                RotateParentToTarget(currentTarget.transform);
+            }
+
+            // Автоматический выстрел.
+            shootTimer += Time.deltaTime;
+            if (shootTimer >= shootInterval && arrow.GetComponent<ArrowController>().IsFlying == false)
+            {
+                arrow.GetComponent<ArrowController>().Shoot(currentTarget.transform);
+                shootTimer = 0f; // Сбрасываем таймер.
             }
         }
+        else
+        {
+            // Ищем новую цель, если текущая недоступна.
+            currentTarget = FindClosestVisibleBall();
+        }
     }
+
 
     public void SaveShootInterval()
     {

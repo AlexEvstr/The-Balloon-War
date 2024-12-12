@@ -7,11 +7,14 @@ public class BallSpawner : MonoBehaviour
     public Material[] materials; // Материалы для шариков (по уровням сложности).
     public float spawnInterval = 0.5f; // Интервал между спавнами шариков.
 
-    private int baseBallCount = 5; // Количество базовых (красных) шариков на первом уровне.
+    //private int baseBallCount = 5; // Количество базовых (красных) шариков на первом уровне.
 
     public int GetTotalBallsForLevel(int level)
     {
-        return Mathf.Max(3, 3 + (level - 1)); // Минимум 3 шарика, плавное увеличение.
+        // Базовое количество шариков: растёт на 1 каждые 2 уровня.
+        int baseBallCount = Mathf.Min(3 + (level / 2), 10); // Максимум 10 шариков.
+
+        return baseBallCount;
     }
 
     public IEnumerator SpawnBalls(int level)
@@ -49,25 +52,22 @@ public class BallSpawner : MonoBehaviour
     private int GetMaterialIndexForBall(int ballIndex, int level)
     {
         // Постепенное добавление сложных шариков.
-        if (level == 1)
+        if (level <= 2)
         {
-            return 0; // Только красные.
+            return 0; // Только красные шарики.
         }
-        else if (level == 2)
+        else if (level <= 4)
         {
-            return ballIndex < baseBallCount ? 0 : 1; // Красные, затем зелёные.
+            return ballIndex < 3 ? 0 : 1; // Красные и немного зелёных.
+        }
+        else if (level <= 6)
+        {
+            return ballIndex < 2 ? 0 : (ballIndex < 5 ? 1 : 2); // Добавляем синие.
         }
         else
         {
-            // Постепенное добавление сложных шариков на следующих уровнях.
-            if (ballIndex < baseBallCount - level + 2)
-            {
-                return 0; // Часть красных.
-            }
-            else
-            {
-                return Mathf.Min(level - 2, materials.Length - 1); // Добавляем сложные шарики.
-            }
+            // Постепенное усложнение с добавлением большего количества сложных шариков.
+            return Mathf.Min((level - 2) / 2, materials.Length - 1);
         }
     }
 }
