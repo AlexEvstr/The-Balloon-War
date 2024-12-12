@@ -9,6 +9,8 @@ public class BallController : MonoBehaviour
 
     private int currentLevel; // Текущий уровень прочности шарика.
 
+    private GameObject _defeatPanel;
+
     private void Start()
     {
         // Изначально шарик получает максимальный уровень сложности.
@@ -20,7 +22,6 @@ public class BallController : MonoBehaviour
 
     private void Update()
     {
-        // Двигаем шарик вверх.
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
 
         // Проверяем, если шарик вышел за верхнюю границу экрана.

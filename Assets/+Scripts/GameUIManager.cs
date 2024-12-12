@@ -16,18 +16,25 @@ public class GameUIManager : MonoBehaviour
     // Картинки для жизней.
     public List<Image> lifeImages;
 
+    private void Start()
+    {
+        Time.timeScale = 1f;
+    }
+
     public void ShowVictoryWindow()
     {
-        Time.timeScale = 0f;
+        //Time.timeScale = 0f;
         victoryWindow.gameObject.SetActive(true);
         victoryWindow.AnimateOpen();
     }
 
     public void ShowDefeatWindow()
     {
-        Time.timeScale = 0f;
-        defeatWindow.gameObject.SetActive(true);
-        defeatWindow.AnimateOpen();
+        if (!defeatWindow.gameObject.activeInHierarchy)
+        {
+            defeatWindow.gameObject.SetActive(true);
+            defeatWindow.AnimateOpen();
+        }
     }
 
     public void ShowPauseWindow()
@@ -65,6 +72,6 @@ public class GameUIManager : MonoBehaviour
 
     public void UpdateCoins(int coins)
     {
-        coinsText.text = "Coins: " + coins;
+        coinsText.text = coins.ToString();
     }
 }

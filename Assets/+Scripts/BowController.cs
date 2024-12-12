@@ -7,8 +7,15 @@ public class BowController : MonoBehaviour
     private float shootTimer; // Таймер для отслеживания времени между выстрелами.
     private float detectionRadius = 2.5f; // Радиус "видимости" шариков.
 
+    private string playerPrefsKey;
+
     private void Start()
     {
+        // Уникальный ключ для этого лука (можно использовать имя объекта).
+        playerPrefsKey = "Bow_" + gameObject.name + "_ShootInterval";
+
+        // Загружаем сохранённое значение или оставляем дефолтное.
+        shootInterval = PlayerPrefs.GetFloat(playerPrefsKey, shootInterval);
         // Получаем ссылку на стрелу (дочерний объект с индексом 0).
         arrow = transform.GetChild(0);
     }
@@ -28,6 +35,7 @@ public class BowController : MonoBehaviour
 
                 // Автоматический выстрел.
                 shootTimer += Time.deltaTime;
+                
                 if (shootTimer >= shootInterval && arrow.GetComponent<ArrowController>().IsFlying == false)
                 {
                     arrow.GetComponent<ArrowController>().Shoot(targetBall.transform);
@@ -35,6 +43,12 @@ public class BowController : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void SaveShootInterval()
+    {
+        PlayerPrefs.SetFloat(playerPrefsKey, shootInterval);
+        PlayerPrefs.Save(); // Сохраняем изменения.
     }
 
     private void RotateParentToTarget(Transform target)
@@ -70,13 +84,13 @@ public class BowController : MonoBehaviour
         return closestBall;
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    // Устанавливаем цвет для визуализации.
-    //    Gizmos.color = Color.green;
+    public float GetShootInterval()
+    {
+        return shootInterval;
+    }
 
-    //    // Рисуем сферу вокруг лука с радиусом "видимости".
-    //    Gizmos.DrawWireSphere(transform.position, detectionRadius);
-    //}
-
+    public void SetShootInterval(float newInterval)
+    {
+        shootInterval = newInterval;
+    }
 }

@@ -36,14 +36,15 @@ public class BallSpawner : MonoBehaviour
             BallController ballController = ball.GetComponent<BallController>();
             ballController.materials = ballMaterials;
 
-            // Привязываем событие OnDestroyed.
-            ballController.OnDestroyed = FindObjectOfType<GameManager>().OnBallDestroyed;
+            // Привязываем события OnDestroyed и OnEscaped.
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            ballController.OnDestroyed = gameManager.OnBallDestroyed;
+            ballController.OnEscaped = gameManager.OnBallEscaped;
 
             // Ждём перед спавном следующего шарика.
             yield return new WaitForSeconds(spawnInterval);
         }
     }
-
 
     private int GetMaterialIndexForBall(int ballIndex, int level)
     {

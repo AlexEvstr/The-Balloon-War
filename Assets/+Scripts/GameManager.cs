@@ -12,14 +12,34 @@ public class GameManager : MonoBehaviour
     private int totalBalls;
     private int coins;
 
+    public BowUpgradeManager[] upgradeManagers; // Список всех апгрейдов луков.
+
+
+    public int Coins
+    {
+        get => coins;
+        private set
+        {
+            coins = value;
+            PlayerPrefs.SetInt("Coins", coins); // Сохраняем монеты.
+            gameUIManager.UpdateCoins(coins); // Обновляем интерфейс.
+
+            // Обновляем все кнопки апгрейдов.
+            foreach (var manager in upgradeManagers)
+            {
+                manager.UpdateButton();
+            }
+        }
+    }
+
+
     private void Start()
     {
         currentLevel = PlayerPrefs.GetInt("Level", 1);
-        coins = 0;
+        Coins = PlayerPrefs.GetInt("Coins", 0); // Загружаем сохранённые монеты или устанавливаем 0.
 
         gameUIManager.UpdateLevel(currentLevel);
         gameUIManager.UpdateLives(lives);
-        gameUIManager.UpdateCoins(coins);
 
         StartCoroutine(SpawnBallsForLevel());
     }
@@ -32,8 +52,7 @@ public class GameManager : MonoBehaviour
 
     public void OnBallDestroyed()
     {
-        coins += 10; // Добавляем монеты за уничтожение шарика.
-        gameUIManager.UpdateCoins(coins);
+        Coins += 10; // Добавляем монеты за уничтожение шарика.
 
         totalBalls--;
 
@@ -46,11 +65,17 @@ public class GameManager : MonoBehaviour
     public void OnBallEscaped()
     {
         lives--;
+        totalBalls--;
         gameUIManager.UpdateLives(lives);
 
         if (lives <= 0)
         {
             GameOver();
+        }
+
+        if (totalBalls <= 0 && lives > 0)
+        {
+            LevelComplete();
         }
     }
 
@@ -67,6 +92,19 @@ public class GameManager : MonoBehaviour
     private void GameOver()
     {
         gameUIManager.ShowDefeatWindow();
+    }
+
+    public void SpendCoins(int amount)
+    {
+        if (Coins >= amount)
+        {
+            Coins -= amount; // Снимаем монеты.
+        }
+    }
+
+    public bool CanAfford(int amount)
+    {
+        return Coins >= amount; // Проверка, достаточно ли монет.
     }
 
     public void RestartScene()
