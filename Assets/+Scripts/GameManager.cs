@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
         currentLevel++;
         PlayerPrefs.SetInt("Level", currentLevel);
 
-        gameUIManager.UpdateLevel(currentLevel);
+        //gameUIManager.UpdateLevel(currentLevel);
 
         gameUIManager.ShowVictoryWindow();
     }
