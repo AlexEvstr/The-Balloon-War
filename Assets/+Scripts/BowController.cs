@@ -3,7 +3,7 @@ using UnityEngine;
 public class BowController : MonoBehaviour
 {
     private Transform arrow; // Ссылка на стрелу (первый дочерний объект).
-    public float shootInterval = 2f; // Интервал между выстрелами.
+    private float shootInterval = 1.5f; // Интервал между выстрелами.
     private float shootTimer; // Таймер для отслеживания времени между выстрелами.
     private float detectionRadius = 2.5f; // Радиус "видимости" шариков.
 

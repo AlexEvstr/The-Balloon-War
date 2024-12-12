@@ -1,76 +1,76 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    private BallSpawner ballSpawner; // Ссылка на спавнер шариков.
-    private GameUIManager gameUIManager; // Ссылка на менеджер UI.
+    public BallSpawner ballSpawner;
+    public GameUIManager gameUIManager;
 
-    public int lives = 3; // Количество жизней.
-    private int currentLevel; // Текущий уровень.
-    private int totalBalls; // Общее количество шариков в уровне.
+    public int lives = 3;
+    private int currentLevel;
+    private int totalBalls;
+    private int coins;
 
     private void Start()
     {
-        ballSpawner = GetComponent<BallSpawner>();
-        gameUIManager = GetComponent<GameUIManager>();
-        // Загружаем уровень из PlayerPrefs или устанавливаем первый уровень.
         currentLevel = PlayerPrefs.GetInt("Level", 1);
+        coins = 0;
 
-        // Определяем количество шариков.
-        totalBalls = 3 + currentLevel - 1;
+        gameUIManager.UpdateLevel(currentLevel);
+        gameUIManager.UpdateLives(lives);
+        gameUIManager.UpdateCoins(coins);
 
-        // Запускаем спавн шариков.
-        StartCoroutine(ballSpawner.SpawnBalls(currentLevel));
+        StartCoroutine(SpawnBallsForLevel());
+    }
+
+    private IEnumerator SpawnBallsForLevel()
+    {
+        totalBalls = ballSpawner.GetTotalBallsForLevel(currentLevel);
+        yield return StartCoroutine(ballSpawner.SpawnBalls(currentLevel));
     }
 
     public void OnBallDestroyed()
     {
+        coins += 10; // Добавляем монеты за уничтожение шарика.
+        gameUIManager.UpdateCoins(coins);
+
         totalBalls--;
-        Debug.Log(totalBalls);
-        // Проверяем, если все шарики уничтожены и остались жизни.
+
         if (totalBalls <= 0 && lives > 0)
         {
             LevelComplete();
         }
     }
 
-
     public void OnBallEscaped()
     {
-        Debug.Log($"lives: {lives}-1 = {lives-1}");
-        totalBalls--;
         lives--;
-        // Если жизни закончились.
+        gameUIManager.UpdateLives(lives);
+
         if (lives <= 0)
         {
             GameOver();
-        }
-        if (totalBalls <= 0 && lives > 0)
-        {
-            LevelComplete();
         }
     }
 
     private void LevelComplete()
     {
-        // Увеличиваем уровень.
         currentLevel++;
-        PlayerPrefs.SetInt("Level", currentLevel); // Сохраняем уровень.
+        PlayerPrefs.SetInt("Level", currentLevel);
 
-        // Открываем окно победы.
+        gameUIManager.UpdateLevel(currentLevel);
+
         gameUIManager.ShowVictoryWindow();
     }
 
     private void GameOver()
     {
-        // Открываем окно поражения.
         gameUIManager.ShowDefeatWindow();
     }
 
     public void RestartScene()
     {
-        // Перезагружаем текущую сцену.
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
