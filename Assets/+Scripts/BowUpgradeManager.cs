@@ -13,9 +13,15 @@ public class BowUpgradeManager : MonoBehaviour
     private string playerPrefsKey;
 
     private GameManager gameManager;
+    private const float minShootInterval = 0.3f; // Минимальная скорость стрельбы.
 
     private void Start()
     {
+        if (bow.GetShootInterval() <= 0.3)
+        {
+            costText.text = "MAX";
+            upgradeButton.interactable = false;
+        }
         gameManager = FindObjectOfType<GameManager>();
 
         upgradeButton = GetComponent<Button>();
@@ -30,13 +36,13 @@ public class BowUpgradeManager : MonoBehaviour
 
     public void TryUpgrade()
     {
-        if (gameManager.CanAfford(upgradeCost))
+        if (gameManager.CanAfford(upgradeCost) && bow.GetShootInterval() > minShootInterval)
         {
             // Снимаем монеты через GameManager.
             gameManager.SpendCoins(upgradeCost);
 
             // Улучшаем лук.
-            bow.SetShootInterval(Mathf.Max(0.5f, bow.GetShootInterval() - fireRateIncrease));
+            bow.SetShootInterval(Mathf.Max(minShootInterval, bow.GetShootInterval() - fireRateIncrease));
             bow.SaveShootInterval(); // Сохраняем изменения.
 
             // Увеличиваем стоимость следующего апгрейда.
@@ -48,9 +54,6 @@ public class BowUpgradeManager : MonoBehaviour
             UpdateButton();
         }
     }
-
-
-
 
     public void UpdateButton()
     {
@@ -64,8 +67,16 @@ public class BowUpgradeManager : MonoBehaviour
             upgradeButton.interactable = false; // Выключаем кнопку.
         }
 
-        // Обновляем текст стоимости.
-        costText.text = upgradeCost.ToString();
+        // Обновляем текст стоимости или пишем "MAX", если апгрейд больше невозможен.
+        if (bow.GetShootInterval() <= 0.3f)
+        {
+            costText.text = "MAX";
+            upgradeButton.interactable = false; // Отключаем кнопку.
+        }
+        else
+        {
+            costText.text = upgradeCost.ToString();
+        }
     }
 
     private void SaveUpgradeCost()

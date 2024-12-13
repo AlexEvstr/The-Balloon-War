@@ -10,7 +10,7 @@ public class BowController : MonoBehaviour
     private string playerPrefsKey;
     private GameObject currentTarget; // Текущая цель.
 
-    private void Start()
+    private void OnEnable()
     {
         // Уникальный ключ для этого лука (можно использовать имя объекта).
         playerPrefsKey = "Bow_" + gameObject.name + "_ShootInterval";
@@ -19,6 +19,8 @@ public class BowController : MonoBehaviour
         shootInterval = PlayerPrefs.GetFloat(playerPrefsKey, shootInterval);
         // Получаем ссылку на стрелу (дочерний объект с индексом 0).
         arrow = transform.GetChild(0);
+
+        Debug.Log(shootInterval);
     }
 
     private void Update()

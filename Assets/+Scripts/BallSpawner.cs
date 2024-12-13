@@ -12,7 +12,7 @@ public class BallSpawner : MonoBehaviour
     public int GetTotalBallsForLevel(int level)
     {
         // Базовое количество шариков: растёт на 1 каждые 2 уровня.
-        int baseBallCount = Mathf.Min(3 + (level / 2), 10); // Максимум 10 шариков.
+        int baseBallCount = Mathf.Min(3 + (level / 2), 50); // Максимум 10 шариков.
 
         return baseBallCount;
     }
@@ -44,30 +44,40 @@ public class BallSpawner : MonoBehaviour
             ballController.OnDestroyed = gameManager.OnBallDestroyed;
             ballController.OnEscaped = gameManager.OnBallEscaped;
 
-            // Ждём перед спавном следующего шарика.
-            yield return new WaitForSeconds(spawnInterval);
+            // Динамическое время между спавнами (ускорение на высоких уровнях).
+            float adjustedInterval = Mathf.Max(spawnInterval - (level * 0.05f), 0.3f);
+            yield return new WaitForSeconds(adjustedInterval);
         }
     }
 
+
     private int GetMaterialIndexForBall(int ballIndex, int level)
     {
-        // Постепенное добавление сложных шариков.
-        if (level <= 2)
+        int maxMaterialIndex = Mathf.Min(level - 1, materials.Length - 1); // Максимальный индекс материала для текущего уровня.
+
+        // Постепенное распределение шариков по сложности.
+        if (level == 1)
         {
             return 0; // Только красные шарики.
         }
-        else if (level <= 4)
+        else if (level == 2)
         {
-            return ballIndex < 3 ? 0 : 1; // Красные и немного зелёных.
+            return ballIndex < 3 ? 0 : 1; // 3 красных, 1 зелёный.
         }
-        else if (level <= 6)
+        else if (level == 3)
         {
-            return ballIndex < 2 ? 0 : (ballIndex < 5 ? 1 : 2); // Добавляем синие.
+            if (ballIndex < 3) return 0; // 3 красных.
+            if (ballIndex < 5) return 1; // 2 зелёных.
+            return 2; // 1 синий.
         }
         else
         {
-            // Постепенное усложнение с добавлением большего количества сложных шариков.
-            return Mathf.Min((level - 2) / 2, materials.Length - 1);
+            // На высоких уровнях равномерно распределяем сложности.
+            if (ballIndex % 3 == 0) return Mathf.Min(0, maxMaterialIndex); // Простые (красные).
+            if (ballIndex % 3 == 1) return Mathf.Min(1, maxMaterialIndex); // Средние (зелёные).
+            return maxMaterialIndex; // Сложные (синие и выше).
         }
     }
+
+
 }
