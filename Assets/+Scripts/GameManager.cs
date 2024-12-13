@@ -84,6 +84,14 @@ public class GameManager : MonoBehaviour
         currentLevel++;
         PlayerPrefs.SetInt("Level", currentLevel);
 
+        // Проверяем, если текущий уровень превышает лучший уровень.
+        int bestLevel = PlayerPrefs.GetInt("BestLevel", 1);
+        if (currentLevel > bestLevel)
+        {
+            PlayerPrefs.SetInt("BestLevel", currentLevel);
+        }
+
+        // Обновляем интерфейс, если требуется.
         //gameUIManager.UpdateLevel(currentLevel);
 
         gameUIManager.ShowVictoryWindow();
