@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
     private int totalBalls;
     private int coins;
 
+    private GameAudio _gameAudio;
+
     public BowUpgradeManager[] upgradeManagers; // Список всех апгрейдов луков.
 
 
@@ -35,6 +37,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        _gameAudio = GetComponent<GameAudio>();
         currentLevel = PlayerPrefs.GetInt("Level", 1);
         Coins = PlayerPrefs.GetInt("Coins", 0); // Загружаем сохранённые монеты или устанавливаем 0.
 
@@ -55,6 +58,8 @@ public class GameManager : MonoBehaviour
         Coins += 10; // Добавляем монеты за уничтожение шарика.
 
         totalBalls--;
+        _gameAudio.PlayBoomSound();
+        _gameAudio.PlayCoinsSound();
 
         if (totalBalls <= 0 && lives > 0)
         {
@@ -64,6 +69,7 @@ public class GameManager : MonoBehaviour
 
     public void OnBallEscaped()
     {
+        _gameAudio.PlayMinusHeartSound();
         lives--;
         totalBalls--;
         gameUIManager.UpdateLives(lives);
@@ -81,6 +87,8 @@ public class GameManager : MonoBehaviour
 
     private void LevelComplete()
     {
+        _gameAudio.StopAllSounds();
+        _gameAudio.PlayWinSound();
         currentLevel++;
         PlayerPrefs.SetInt("Level", currentLevel);
 
@@ -99,6 +107,8 @@ public class GameManager : MonoBehaviour
 
     private void GameOver()
     {
+        _gameAudio.StopAllSounds();
+        _gameAudio.PlayLoseSound();
         gameUIManager.ShowDefeatWindow();
     }
 
@@ -107,6 +117,7 @@ public class GameManager : MonoBehaviour
         if (Coins >= amount)
         {
             Coins -= amount; // Снимаем монеты.
+            _gameAudio.PlayUpgradeSound();
         }
     }
 

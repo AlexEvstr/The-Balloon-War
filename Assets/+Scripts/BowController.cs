@@ -10,6 +10,8 @@ public class BowController : MonoBehaviour
     private string playerPrefsKey;
     private GameObject currentTarget; // Текущая цель.
 
+    [SerializeField] private GameAudio _gameAudio;
+
     private void OnEnable()
     {
         // Уникальный ключ для этого лука (можно использовать имя объекта).
@@ -47,6 +49,7 @@ public class BowController : MonoBehaviour
             {
                 arrow.GetComponent<ArrowController>().Shoot(currentTarget.transform);
                 shootTimer = 0f; // Сбрасываем таймер.
+                _gameAudio.PlayShootSound();
             }
         }
         else
