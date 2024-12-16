@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class GameAudio : MonoBehaviour
@@ -25,11 +26,25 @@ public class GameAudio : MonoBehaviour
 
     public void PlayWinSound()
     {
-        _audioSource.PlayOneShot(winSound);
+        StartCoroutine(WaitForWin());
     }
 
     public void PlayLoseSound()
     {
+        StartCoroutine(WaitForLose());
+    }
+
+    private IEnumerator WaitForWin()
+    {
+        yield return new WaitForSeconds(1.0f);
+        StopAllSounds();
+        _audioSource.PlayOneShot(winSound);
+    }
+
+    private IEnumerator WaitForLose()
+    {
+        yield return new WaitForSeconds(1.0f);
+        StopAllSounds();
         _audioSource.PlayOneShot(loseSound);
     }
 
@@ -58,7 +73,7 @@ public class GameAudio : MonoBehaviour
         _audioSource.PlayOneShot(upgradeSound);
     }
 
-    public void StopAllSounds()
+    private void StopAllSounds()
     {
         _audioSource.Stop();
     }

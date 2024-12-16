@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public BallSpawner ballSpawner;
     public GameUIManager gameUIManager;
 
     public int lives = 3;
@@ -14,7 +13,12 @@ public class GameManager : MonoBehaviour
 
     private GameAudio _gameAudio;
 
-    public BowUpgradeManager[] upgradeManagers; // Список всех апгрейдов луков.
+    public BowUpgradeManager[] upgradeManagers;
+
+    private LevelManager _levelManager;
+
+    [SerializeField] private GameObject _loseWindow;
+    [SerializeField] private GameObject _winWindow;
 
 
     public int Coins
@@ -23,10 +27,9 @@ public class GameManager : MonoBehaviour
         private set
         {
             coins = value;
-            PlayerPrefs.SetInt("Coins", coins); // Сохраняем монеты.
-            gameUIManager.UpdateCoins(coins); // Обновляем интерфейс.
+            PlayerPrefs.SetInt("Coins", coins);
+            gameUIManager.UpdateCoins(coins);
 
-            // Обновляем все кнопки апгрейдов.
             foreach (var manager in upgradeManagers)
             {
                 manager.UpdateButton();
@@ -37,9 +40,10 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        _levelManager = GetComponent<LevelManager>();
         _gameAudio = GetComponent<GameAudio>();
         currentLevel = PlayerPrefs.GetInt("Level", 1);
-        Coins = PlayerPrefs.GetInt("Coins", 0); // Загружаем сохранённые монеты или устанавливаем 0.
+        Coins = PlayerPrefs.GetInt("Coins", 0);
 
         gameUIManager.UpdateLevel(currentLevel);
         gameUIManager.UpdateLives(lives);
@@ -49,18 +53,17 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator SpawnBallsForLevel()
     {
-        totalBalls = ballSpawner.GetTotalBallsForLevel(currentLevel);
-        yield return StartCoroutine(ballSpawner.SpawnBalls(currentLevel));
+        totalBalls = _levelManager.levels[currentLevel - 1].ballSequence.Count;
+        yield return StartCoroutine(_levelManager.SpawnBalls(currentLevel - 1));
     }
 
     public void OnBallDestroyed()
     {
-        Coins += 10; // Добавляем монеты за уничтожение шарика.
+        Coins += 10;
 
         totalBalls--;
         _gameAudio.PlayBoomSound();
         _gameAudio.PlayCoinsSound();
-
         if (totalBalls <= 0 && lives > 0)
         {
             LevelComplete();
@@ -69,6 +72,7 @@ public class GameManager : MonoBehaviour
 
     public void OnBallEscaped()
     {
+        if (_loseWindow.activeInHierarchy || _winWindow.activeInHierarchy) return;
         _gameAudio.PlayMinusHeartSound();
         lives--;
         totalBalls--;
@@ -87,27 +91,21 @@ public class GameManager : MonoBehaviour
 
     private void LevelComplete()
     {
-        _gameAudio.StopAllSounds();
         _gameAudio.PlayWinSound();
         currentLevel++;
         PlayerPrefs.SetInt("Level", currentLevel);
 
-        // Проверяем, если текущий уровень превышает лучший уровень.
         int bestLevel = PlayerPrefs.GetInt("BestLevel", 1);
         if (currentLevel > bestLevel)
         {
             PlayerPrefs.SetInt("BestLevel", currentLevel);
         }
 
-        // Обновляем интерфейс, если требуется.
-        //gameUIManager.UpdateLevel(currentLevel);
-
         gameUIManager.ShowVictoryWindow();
     }
 
     private void GameOver()
     {
-        _gameAudio.StopAllSounds();
         _gameAudio.PlayLoseSound();
         gameUIManager.ShowDefeatWindow();
     }
@@ -116,14 +114,14 @@ public class GameManager : MonoBehaviour
     {
         if (Coins >= amount)
         {
-            Coins -= amount; // Снимаем монеты.
+            Coins -= amount;
             _gameAudio.PlayUpgradeSound();
         }
     }
 
     public bool CanAfford(int amount)
     {
-        return Coins >= amount; // Проверка, достаточно ли монет.
+        return Coins >= amount;
     }
 
     public void RestartScene()

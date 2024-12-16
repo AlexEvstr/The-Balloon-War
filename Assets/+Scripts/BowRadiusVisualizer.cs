@@ -3,16 +3,16 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class BowRadiusVisualizer : MonoBehaviour
 {
-    public float radius = 10f; // Радиус круга.
-    public int segments = 100; // Количество сегментов для круга.
+    public float radius = 10f;
+    public int segments = 100;
 
     private LineRenderer lineRenderer;
 
     private void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        lineRenderer.positionCount = segments + 1; // Устанавливаем количество точек.
-        lineRenderer.loop = true; // Замыкаем круг.
+        lineRenderer.positionCount = segments + 1;
+        lineRenderer.loop = true;
         DrawCircle();
     }
 
@@ -34,6 +34,6 @@ public class BowRadiusVisualizer : MonoBehaviour
     public void UpdateRadius(float newRadius)
     {
         radius = newRadius;
-        DrawCircle(); // Перерисовываем круг при изменении радиуса.
+        DrawCircle();
     }
 }

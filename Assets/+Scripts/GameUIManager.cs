@@ -8,12 +8,11 @@ public class GameUIManager : MonoBehaviour
     public WindowAnimator victoryWindow;
     public WindowAnimator defeatWindow;
     public WindowAnimator pauseWindow;
+    public GameObject _nextBtn;
 
-    // UI элементы для уровня и монет.
     public Text levelText;
     public Text coinsText;
 
-    // Картинки для жизней.
     public List<Image> lifeImages;
 
     private void Start()
@@ -23,17 +22,22 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowVictoryWindow()
     {
-        //Time.timeScale = 0f;
-        victoryWindow.gameObject.SetActive(true);
-        victoryWindow.AnimateOpen();
+        StartCoroutine(WaitForWindow(victoryWindow));
     }
 
     public void ShowDefeatWindow()
     {
-        if (!defeatWindow.gameObject.activeInHierarchy)
+        StartCoroutine(WaitForWindow(defeatWindow));
+    }
+
+    private IEnumerator WaitForWindow(WindowAnimator windowAnimator)
+    {
+        yield return new WaitForSeconds(1.0f);
+
+        if (!windowAnimator.gameObject.activeInHierarchy)
         {
-            defeatWindow.gameObject.SetActive(true);
-            defeatWindow.AnimateOpen();
+            windowAnimator.gameObject.SetActive(true);
+            windowAnimator.AnimateOpen();
         }
     }
 
@@ -56,7 +60,6 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    // Методы для обновления UI.
     public void UpdateLives(int lives)
     {
         for (int i = 0; i < lifeImages.Count; i++)
@@ -68,6 +71,10 @@ public class GameUIManager : MonoBehaviour
     public void UpdateLevel(int level)
     {
         levelText.text = "Level: " + level;
+        if (level >= 30)
+        {
+            _nextBtn.SetActive(false);
+        }
     }
 
     public void UpdateCoins(int coins)

@@ -3,14 +3,13 @@ using UnityEngine;
 
 public class WindowAnimator : MonoBehaviour
 {
-    private Transform childObject; // Дочерний объект для анимации.
-    public float animationDuration = 0.5f; // Длительность анимации.
+    private Transform childObject;
+    public float animationDuration = 0.5f;
 
     private void Awake()
     {
-        // Получаем дочерний объект с индексом 0.
         childObject = transform.GetChild(0);
-        childObject.localScale = Vector3.zero; // Устанавливаем начальный масштаб.
+        childObject.localScale = Vector3.zero;
     }
 
     public void AnimateOpen()
@@ -31,7 +30,7 @@ public class WindowAnimator : MonoBehaviour
         while (elapsedTime < duration)
         {
             childObject.localScale = Vector3.Lerp(startScale, endScale, elapsedTime / duration);
-            elapsedTime += Time.unscaledDeltaTime; // Используем unscaledDeltaTime для независимости от Time.timeScale.
+            elapsedTime += Time.unscaledDeltaTime;
             yield return null;
         }
 
